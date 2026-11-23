@@ -767,8 +767,9 @@ function CustomersPage() {
   async function sendStatementWhatsApp(c: Customer) {
     if (sendingId) return;
     const custSales = (sales ?? []).filter((s) => s.customer_id === c.id);
-    if (custSales.length === 0) {
-      toast.error("لا توجد عمليات بيع لهذا الزبون");
+    const custLedgerEntries = (payments ?? []).filter((p) => p.customer_id === c.id);
+    if (custSales.length === 0 && custLedgerEntries.length === 0) {
+      toast.error("لا توجد حركات مالية لهذا الزبون");
       return;
     }
     setSendingId(c.id);
@@ -824,8 +825,7 @@ function CustomersPage() {
       const salesTotal = custSales.reduce((a, s) => a + (Number(s.price) || 0), 0);
 
       // سجل التسديدات والمبالغ المضافة لهذا الزبون
-      const custLedger = (payments ?? [])
-        .filter((p) => p.customer_id === c.id)
+      const custLedger = custLedgerEntries
         .slice()
         .sort((a, b) => String(a.created_at).localeCompare(String(b.created_at)))
         .map((p) => {
