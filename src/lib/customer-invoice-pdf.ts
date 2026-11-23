@@ -216,6 +216,7 @@ export async function buildCustomerInvoicePdfBlob(input: CustomerInvoiceInput): 
     0,
   );
   const ledger = input.ledger ?? [];
+  const hasSales = input.items.length > 0;
   const charges = ledger
     .filter((e) => Number(e.amount) < 0)
     .map((e) => ({ ...e, amount: Math.abs(Number(e.amount) || 0) }));
@@ -284,7 +285,7 @@ export async function buildCustomerInvoicePdfBlob(input: CustomerInvoiceInput): 
         width: "auto",
         table: {
           widths: [180],
-          body: [[cell("فاتورة بيع آجـــل", { bold: true, fontSize: 13, margin: [6, 4, 6, 4] })]],
+          body: [[cell(hasSales ? "فاتورة بيع آجـــل" : "كشف حساب", { bold: true, fontSize: 13, margin: [6, 4, 6, 4] })]],
         },
         layout: {
           hLineColor: () => LINE,
@@ -572,9 +573,7 @@ export async function buildCustomerInvoicePdfBlob(input: CustomerInvoiceInput): 
       metaRow,
       recipientRow,
       statementRow,
-      itemsTable,
-      totalsRow,
-      wordsBox,
+      ...(hasSales ? [itemsTable, totalsRow, wordsBox] : []),
       ...ledgerBlocks,
       summaryBox,
       balanceBox,
